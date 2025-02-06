@@ -1,0 +1,9 @@
+{
+	"name": "data-viz",
+	"location": "uksouth",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "7fc155d1-5bf6-42f1-947c-101dc8f93b3b",
+		"tenantId": "b69eefee-f0a7-410b-b594-e4f23ba11195"
+	}
+}
