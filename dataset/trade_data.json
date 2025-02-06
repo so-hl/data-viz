@@ -1,0 +1,40 @@
+{
+	"name": "trade_data",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureBlobStorage1",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"folderPath": "BACI_HS17_V202501",
+				"container": "azureml"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "country_code",
+				"type": "String"
+			},
+			{
+				"name": "country_name",
+				"type": "String"
+			},
+			{
+				"name": "country_iso2",
+				"type": "String"
+			},
+			{
+				"name": "country_iso3",
+				"type": "String"
+			}
+		]
+	}
+}
