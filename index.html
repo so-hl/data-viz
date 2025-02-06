@@ -5,54 +5,59 @@
   <!-- To link the CSS and add more styles, etc -->
   <link rel="stylesheet" type="text/css" href="index.css">
 
-    <!-- This is a link to the vega-lite which we're using to make graphs -->
-    <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+  <!-- This is a link to the vega-lite which we're using to make graphs -->
+  <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
 
 </head>
 
-  <body>
-    <h1> Tracking and Visualising Global Trade Data with AI Tools:Hackathon Resources for HMT's Public Hackathon </h1>
-    <p> Data-Viz Team </p>
+<body>
+  <h1>Tracking and Visualising Global Trade Data with AI Tools: Hackathon Resources for HMT's Public Hackathon</h1>
+  <p>Data-Viz Team</p>
 
-    <section>
-      <figure id="chart1">
-      </figure>
-    </section>
+  <section>
+    <!-- Embed the Folium map here -->
+    <iframe src="world_map_colored.html" width="800" height="600"></iframe>
+  </section>
 
-    <section>
-      <figure id="chart2">
-      </figure>
-    </section>
+  <section>
+    <figure id="chart1">
+    </figure>
+  </section>
 
-    <section>
-      <figure id="chart3">
-      </figure>
-    </section>
+  <section>
+    <figure id="chart2">
+    </figure>
+  </section>
 
-    <section>
-      <figure id="chart4">
-      </figure>
-    </section>
+  <section>
+    <figure id="chart3">
+    </figure>
+  </section>
 
-    <section>
-      <figure id="chart5">
-      </figure>
-    </section>
+  <section>
+    <figure id="chart4">
+    </figure>
+  </section>
 
-    <script>
-       var Chart_1="map.json";
-       var Chart_2="Chart_2.json";
-       var Chart_3="Chart_3.json";
-       var Chart_4="Chart_4.json";
-       var Chart_5="Chart_5.json";
-       vegaEmbed('#chart1', Chart_1)
-       vegaEmbed('#chart2', Chart_2)
-       vegaEmbed('#chart3', Chart_3)
-       vegaEmbed('#chart4', Chart_4)
-       vegaEmbed('#chart5', "Chart_5.json")
-    </script>
+  <section>
+    <figure id="chart5">
+    </figure>
+  </section>
 
-  </body>
+  <script>
+     var Chart_1="Chart_1.json";
+     var Chart_2="Chart_2.json";
+     var Chart_3="Chart_3.json";
+     var Chart_4="Chart_4.json";
+     var Chart_5="Chart_5.json";
+     vegaEmbed('#chart1', Chart_1)
+     vegaEmbed('#chart2', Chart_2)
+     vegaEmbed('#chart3', Chart_3)
+     vegaEmbed('#chart4', Chart_4)
+     vegaEmbed('#chart5', "Chart_5.json")
+  </script>
+
+</body>
 </html>
