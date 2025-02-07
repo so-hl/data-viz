@@ -1,63 +1,509 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
-<head> 
-  <!-- To link the CSS and add more styles, etc -->
-  <link rel="stylesheet" type="text/css" href="index.css">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Chart</title>
+    <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+    <style>
+        html {
+            background-color: rgb(18, 43, 57);
+        }
 
-  <!-- This is a link to the vega-lite which we're using to make graphs -->
-  <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+        body {
+            background-color: rgb(18, 43, 57);
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            margin-left: 5vw;
+            margin-right: 5vw;
+            margin-top: 5vh;
+        }
 
+        .container {
+            max-width: 1200px;
+            display: flex;
+            gap: 20px;
+            align-items: start;
+        }
+
+        .config-block {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: #ddd;
+            color: #222;
+            padding: 15px;
+            width: 600px;
+            border-radius: 10px;
+        }
+
+        .suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .suggestion {
+            background: #555;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            background: #ccc;
+            border: none;
+            padding: 5px;
+            border-radius: 5px;
+            color: #222;
+        }
+
+        figure {
+            width: 100%;
+            height: 400px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding-top: 0px;
+            margin-top: 0px;
+        }
+
+        h1 {
+            font-size: 3em;
+        }
+    </style>
 </head>
 
 <body>
-  <h1>Tracking and Visualising Global Trade Data with AI Tools: Hackathon Resources for HMT's Public Hackathon</h1>
-  <p>Data-Viz Team</p>
+    <h1>Trade dashboard</h1>
+    <h2> Top exporter/importer for a product  </h2>
+    <div class="container">
+        <div id="partners-config-block" class="config-block">
+            <label>Product</label>
+            <input type="text" id="product-input" placeholder="Start typing..." onkeyup="fetchAutocomplete('product')">
+            <div id="product-suggestions" class="suggestions"></div>
 
-  <section>
-    <!-- Embed the Folium map here -->
-    <iframe src="world_map_colored.html" width="800" height="600"></iframe>
-  </section>
+            <label>Country</label>
+            <input type="text" id="country-input" placeholder="Start typing..." onkeyup="fetchAutocomplete('country')">
+            <div id="country-suggestions" class="suggestions"></div>
 
-  <section>
-    <figure id="chart1">
-    </figure>
-  </section>
+            <label>Start Year</label>
+            <input type="number" id="start-year" value="2010">
 
-  <section>
-    <figure id="chart2">
-    </figure>
-  </section>
+            <label>End Year</label>
+            <input type="number" id="end-year" value="2022">
 
-  <section>
-    <figure id="chart3">
-    </figure>
-  </section>
+            <label>Trade Type</label>
+            <div>
+                <input type="radio" id="export" name="trade-type" value="export" checked>
+                <label for="export">Origins</label>
+                <input type="radio" id="import" name="trade-type" value="import">
+                <label for="import">Destinations</label>
+            </div>
+            <div>
+                <input type="radio" id="Value" name="metric" value="value" checked>
+                <label for="Value($k)">Value($k)</label>
+                <input type="radio" id="Weight(tons)" name="metric" value="quantity">
+                <label for="Weight(tons)">Weight(tons)</label>
+            </div>
 
-  <section>
-    <figure id="chart4">
-    </figure>
-  </section>
+            <button onclick="updateChart()">Update Chart</button>
+        </div>
+        <figure id="vis"></figure>
+    </div>
+    <h2> Top trade partners for a product</h2>
+    <div class="container">
+        <div id="top-partners-config" class="config-block">
+            <label>Year</label>
+            <input type="number" id="year" value="2021">
 
-  <section>
-    <figure id="chart5">
-    </figure>
-  </section>
+            <label>Country</label>
+            <input type="number" id="country" value="826" onkeyup="fetchAutocomplete('country', 'top-partners-config')">
+            <!-- 826 is the code for the UK -->
+            <div id="country-suggestions" class="suggestions"></div>
 
-  <script>
-     var Chart_1="Chart_1.json";
-     var Chart_2="Chart_2.json";
-     var Chart_3="Chart_3.json";
-     var Chart_4="Chart_4.json";
-     var Chart_5="Chart_5.json";
-     vegaEmbed('#chart1', Chart_1)
-     vegaEmbed('#chart2', Chart_2)
-     vegaEmbed('#chart3', Chart_3)
-     vegaEmbed('#chart4', Chart_4)
-     vegaEmbed('#chart5', "Chart_5.json")
-  </script>
+            <label>Product Code</label>
+            <input type="text" id="product_code" value="010121"
+                onkeyup="fetchAutocomplete('product', 'top-partners-config')">
+            <!-- 010121 is the code for live horses -->
+            <div id="product-suggestions" class="suggestions"></div>
 
+            <label>Trade Type</label>
+            <div>
+                <input type="radio" id="exporter" name="trade-type" value="exporter" checked>
+                <label for="exporter">Exporter</label>
+                <input type="radio" id="importer" name="trade-type" value="importer">
+                <label for="importer">Importer</label>
+            </div>
+            <div>
+                <input type="radio" id="Value" name="metric" value="value" checked>
+                <label for="Value($k)">Value($k)</label>
+                <input type="radio" id="Weight(tons)" name="metric" value="quantity">
+                <label for="Weight(tons)">Weight(tons)</label>
+            </div>
+
+            <button onclick="build_trade_partner_bar_chart()">Update Chart</button>
+
+
+        </div>
+        <figure id="trade_partner_vis"></figure>
+    </div>
+
+    <h2> Bilateral trade by product</h2>
+    <div class="container">
+        <div id="bilat-timeseries-config" class="config-block">
+            <label>Start year</label>
+            <input type="number" id="start-year" value="2010">
+            <input type="number" id="end-year" value="2022">
+
+            <label>Product Code</label>
+            <input type="text" id="product_code" value="010121"
+                onkeyup="fetchAutocomplete('product', 'bilat-timeseries-config')">
+            <!-- 010121 is the code for live horses -->
+            <div id="product-suggestions" class="suggestions"></div>
+
+            <label>Importer</label>
+            <input type="number" id="importer" value="826"
+                onkeyup="fetchAutocomplete('country', 'bilat-timeseries-config')"> <!-- 826 is the code for the UK -->
+            <div id="importer-suggestions" class="suggestions"></div>
+
+            <label>Exporter</label>
+            <input type="number" id="exporter" value="372"
+                onkeyup="fetchAutocomplete('country', 'bilat-timeseries-config')"> <!-- 826 is the code for the UK -->
+            <div id="exporter-suggestions" class="suggestions"></div>
+
+            <label>Metric</label>
+            <div>
+                <input type="radio" id="Value" name="metric" value="value" checked>
+                <label for="Value($k)">Value($k)</label>
+                <input type="radio" id="Weight(tons)" name="metric" value="quantity">
+                <label for="Weight(tons)">Weight(tons)</label>
+            </div>
+
+
+            <button onclick="build_bilat_timerseries_line_chart()">Update Chart</button>
+
+
+        </div>
+        <figure id="bilat_times_series_viz"></figure>
+    </div>
+
+    <h2> Trade map</h2>
+    <div class="container">
+        <div id="trade-map-config" class="config-block">
+            <label>Year</label>
+            <input type="number" id="year" value="2022">
+
+            <label>Product Code</label>
+            <input type="text" id="product_code" value="270900"
+                onkeyup="fetchAutocomplete('product', 'bilat-timeseries-config')">
+            <!-- 010121 is the code for live horses -->
+            <div id="product-suggestions" class="suggestions"></div>
+
+            <label>Country</label>
+            <input type="number" id="country" value="682"
+                onkeyup="fetchAutocomplete('country', 'bilat-timeseries-config')"> <!-- 826 is the code for the UK -->
+            <div id="country-suggestions" class="suggestions"></div>
+
+
+            <button onclick="build_trade_map()">Update Chart</button>
+
+
+        </div>
+        <figure id="trade_map_viz"></figure>
+    </div>
+
+
+
+
+
+    <script>
+
+        const eco_config = {
+            "background": "#122B39", "legend": { "title": { "color": "#b4c8d8", "fontSize": 12, "fontWeight": 400 }, "labelColor": "#b4c8d8", "labelFontSize": 12, "labelFontWeight": 400 },
+            "font": "Arial", "title": { "color": "#b4c8d8", "subtitleColor": "#b4c8d8", "subtitleFontSize": 12, "subtitleFontWeight": 400, "fontSize": 14, "fontWeight": 400 }, "mark": { "line": { "interpolate": "monotone" } }, "view": { "stroke": "rgba(0,0,0, 0)", "height": 300 }, "range": { "category": ["#36B7B4", "#E6224B", "#F4C245", "#0063AF", "#00A767", "#179FDB", "#EB5C2E"], "diverging": ["#E6224B", "#E54753", "#C9C9C9", "#179FDB", "#122B39"], "heatmap": ["#C9C9C9", "#179FDB", "#0063AF", "#122B39"], "ordinal": ["#00A767", "#36B7B4", "#179FDB", "#0063AF", "#243B5A"] }, "axisX": { "domainColor": "#b4c8d8", "domainOpacity": 0.5, "grid": false, "labelAngle": 0, "labelColor": "#b4c8d8", "labelOpacity": 0.7, "orient": "bottom", "tickColor": "#b4c8d8", "tickCount": 10, "tickOpacity": 0.5, "title": "", "titleAlign": "center", "titleAnchor": "middle", "titleColor": "#b4c8d8", "titleFontSize": 12, "titleOpacity": 0.8, "titleX": 207, "titleY": -15 }, "axisY": { "domainColor": "#b4c8d8", "domainOpacity": 0.5, "gridColor": "#b4c8d8", "gridDash": [1, 5], "gridOpacity": 0.5, "labelColor": "#b4c8d8", "labelOpacity": 0.7, "labelPadding": 5, "tickColor": "#b4c8d8", "tickCount": 8, "tickOpacity": 0.5, "ticks": false, "title": "FAO price index", "titleAlign": "left", "titleAngle": 0, "titleBaseline": "bottom", "titleColor": "#b4c8d8", "titleFontSize": 12, "titleOpacity": 0.8, "titleX": 0, "titleY": -7 }
+        };
+
+        let selectedProductName = "";
+        let selectedCountryName = "";
+
+
+        async function fetchAutocomplete(type, configBlockID = "partners-config-block") {
+
+            console.log(`Trying to fetch autocomplete for ${type} and configBlockID ${configBlockID}`);
+
+            const input = type === 'product' ? document.getElementById("product-input") : document.getElementById("country-input");
+            const suggestionsDiv = type === 'product' ? document.getElementById(configBlockID).querySelector("#product-suggestions") : document.getElementById(configBlockID).querySelector("#country-suggestions");
+
+            // is the suggestionsDiv null?
+            if (suggestionsDiv === null) {
+                console.warn("suggestionsDiv is null");
+                return;
+            }
+
+            const query = input.value;
+            if (query.length < 2) return;
+
+            const response = await fetch(`/autocomplete?query=${query}&type=${type}`);
+            const data = await response.json();
+
+            suggestionsDiv.innerHTML = "";
+            data.forEach(item => {
+                let div = document.createElement("div");
+                div.classList.add("suggestion");
+                div.textContent = `${item.code} - ${item.description}`;
+                div.onclick = () => {
+                    input.value = item.code;
+                    if (type === 'product') selectedProductName = item.description;
+                    if (type === 'country') selectedCountryName = item.description;
+                };
+                suggestionsDiv.appendChild(div);
+            });
+        }
+
+        function updateChart() {
+            const productCode = document.getElementById("product-input").value;
+            const startYear = document.getElementById("start-year").value;
+            const endYear = document.getElementById("end-year").value;
+            const tradeType = document.querySelector('input[name="trade-type"]:checked').value;
+            const metric = document.querySelector('input[name="metric"]:checked').value;
+            const apiUrl = `${window.location.origin}/top_traders/?product_code=${productCode}&start_year=${startYear}&end_year=${endYear}&trade_type=${tradeType}&metric=${metric}&num_countries=5&limit=1000`;
+
+            // shorten the product name if needed
+            const cleanedProductName = selectedProductName.length > 30 ? selectedProductName.substring(0, 30) + "..." : selectedProductName;
+
+            let title;
+            // if no country is selected - special case
+            if (selectedCountryName === "") {
+                title = `${tradeType === 'export' ? 'Exports' : 'Imports'} of ${cleanedProductName}`; // Okay, this is counterintuitive
+            } else {
+                title = `${selectedCountryName} ${tradeType === 'export' ? 'Imports' : 'Exports'} of ${cleanedProductName}`;
+            }
+
+            const labelExpr = metric == "value" ? "'$' + datum.label + 'k'" : "datum.value + 't'"
+            const spec = {
+                "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+                "title": {
+                    "text": title,
+                    "subtitle": `Code ${productCode} - ${startYear} to ${endYear}`,
+                },
+                "data": {
+                    "format": { "type": "json", "property": "data" },
+                    "url": apiUrl
+                },
+                "width": "container",
+                "mark": { "type": "line", "point": true },
+                "encoding": {
+                    "x": { "field": "year", "type": "ordinal" },
+                    "y": {
+                        "field": `total_${metric}`,
+                        "axis": {
+                            "labelExpr": labelExpr
+                        },
+                        "type": "quantitative"
+                    },
+                    "color": {
+                        "field": "country_name",
+                        "type": "nominal",
+                        "legend": {
+                            "title": null
+                        }
+                    }
+                }
+            };
+            vegaEmbed('#vis', spec, { config: eco_config });
+        }
+
+        function build_trade_partner_bar_chart(
+            year,
+            country,
+            product_code,
+            trade_type,
+            metric,
+            limit = 5
+        ) {
+
+            // pull the params from the HTML
+            year = document.getElementById("top-partners-config").querySelector("#year").value;
+            country = document.getElementById("top-partners-config").querySelector("#country").value;
+            product_code = document.getElementById("top-partners-config").querySelector("#product_code").value;
+            trade_type = document.getElementById("top-partners-config").querySelector('input[name="trade-type"]:checked').value;
+            // metric = document.getElementById("top-partners-config").querySelector('input[name="metric"]:checked').value;
+            metric = "value";
+            limit = 5;
+
+            data_url = `${window.location.origin}/top_countries/?year=${year}&country=${country}&product_code=${product_code}&trade_type=${trade_type}&metric=${metric}&limit=${limit}`;
+            console.log(data_url);
+
+            spec = {
+                "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+                "title": {
+                    "text": `Top ${limit} trade partners for ${country} in ${year}`,
+                    "subtitle": `Product code ${product_code} - ${trade_type} - ${metric}`
+                },
+                "data": {
+                    "format": { "type": "json", "property": "data" },
+                    "url": data_url
+                },
+                "width": "container",
+                "mark": "bar",
+                "encoding": {
+                    "x": {
+                        "field": metric,
+                        "type": "quantitative",
+                    },
+                    "color": { "value": "#36B7B4" },
+                    "y": {
+                        "field": "country_name",
+                        "type": "nominal",
+                        "sort": "-x"
+                    },
+                }
+            }
+
+            vegaEmbed("#trade_partner_vis", spec, { config: eco_config });
+        }
+
+        build_trade_partner_bar_chart(
+            2021, 826, "010121", "exporter", "value"
+        )
+
+        // {"data":[{"year":2017,"exporter":372,"importer":826,"product_code":10121,"value":375711.313,"quantity":1388.173,"exporter_name":"Ireland","exporter_iso2":"IE","exporter_iso3":"IRL","importer_name":"United Kingdom","importer_iso2":"GB","importer_iso3":"GBR"},{"year":2018,"exporter":372,"importer":826,"product_code":10121,"value":393284.037,"quantity":1363.996,"exporter_name":"Ireland","exporter_iso2":"IE","exporter_iso3":"IRL","importer_name":"United Kingdom","importer_iso2":"GB","importer_iso3":"GBR"},{"year":2019,"exporter":372,"importer":826,"product_code":10121,"value":373233.75,"quantity":1334.679,"exporter_name":"Ireland","exporter_iso2":"IE","exporter_iso3":"IRL","importer_name":"United Kingdom","importer_iso2":"GB","importer_iso3":"GBR"},{"year":2020,"exporter":372,"importer":826,"product_code":10121,"value":386473.064,"quantity":1699.353,"exporter_name":"Ireland","exporter_iso2":"IE","exporter_iso3":"IRL","importer_name":"United Kingdom","importer_iso2":"GB","importer_iso3":"GBR"},{"year":2021,"exporter":372,"importer":826,"product_code":10121,"value":362966.291,"quantity":689.717,"exporter_name":"Ireland","exporter_iso2":"IE","exporter_iso3":"IRL","importer_name":"United Kingdom","importer_iso2":"GB","importer_iso3":"GBR"},{"year":2022,"exporter":372,"importer":826,"product_code":10121,"value":192007.648,"quantity":1242.504,"exporter_name":"Ireland","exporter_iso2":"IE","exporter_iso3":"IRL","importer_name":"United Kingdom","importer_iso2":"GB","importer_iso3":"GBR"}]}
+
+
+        function build_bilat_timerseries_line_chart() {
+
+            // pull the params from the HTML
+            startYear = document.getElementById("bilat-timeseries-config").querySelector("#start-year").value;
+            endYear = document.getElementById("bilat-timeseries-config").querySelector("#end-year").value;
+            exporter = document.getElementById("bilat-timeseries-config").querySelector("#exporter").value;
+            importer = document.getElementById("bilat-timeseries-config").querySelector("#importer").value;
+            product_code = document.getElementById("bilat-timeseries-config").querySelector("#product_code").value;
+            // metric = document.getElementById("bilat-timeseries-config").querySelector('input[name="metric"]:checked').value;\
+            metric = "value";
+
+            // top_countries_timeseries/?start_year=2010&end_year=2020&importer=372&exporter=826&product_code=010121&trade_type=exporter&metric=value&limit=5
+
+            data_url = `${window.location.origin}/top_countries_timeseries/?start_year=${startYear}&end_year=${endYear}&importer=${importer}&exporter=${exporter}&product_code=${product_code}&metric=${metric}`;
+
+            console.log(`bilat url: ${data_url}`);
+
+            spec = {
+                "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+                "title": {
+                    "text": `Bilateral trade between ${importer} and ${exporter} in ${startYear} to ${endYear}`,
+                    "subtitle": `Product code ${product_code} - ${metric}`
+                },
+                "data": {
+                    "format": { "type": "json", "property": "data" },
+                    "url": data_url
+                },
+                "width": "container",
+                "mark": "line",
+                "encoding": {
+                    "x": {
+                        "field": "year",
+                        "axis": {
+                            "format": "d"
+                        },
+                        "type": "quantitative",
+                    },
+                    "color": {
+                        "value": "#36B7B4"
+                    },
+                    "y": {
+                        "field": metric,
+                        "type": "quantitative",
+                    }
+                }
+            }
+
+            vegaEmbed("#bilat_times_series_viz", spec, { config: eco_config });
+
+
+        }
+
+        build_bilat_timerseries_line_chart()
+
+        function build_trade_map() {
+            const year = document.getElementById("trade-map-config").querySelector("#year").value;
+            const product_code = document.getElementById("trade-map-config").querySelector("#product_code").value;
+            const country = document.getElementById("trade-map-config").querySelector("#country").value;
+
+            const data_url = `${window.location.origin}/partners_for_product_in_year/?year=${year}&product_code=${product_code}&country=${country}`;
+            const trade_type = "exporter";
+
+            console.log(`Trade map url: ${data_url}`);
+
+            spec = {
+                "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+                "title": {
+                    "text": `${country} ${trade_type == 'exporter' ? 'exports': 'imports'} of ${product_code} in ${year}`,
+                    "fontSize": 16,
+                    "subtitleFontSize": 12,
+                    "subtitleFontWeight": "lighter",
+                    "anchor": "middle"
+                },
+                "description": "2021 World Bank data, GDP per capita in current international $ and converted to purchasing power parity. Grey countries have missing data.",
+                "data": {
+                    "url": "https://raw.githubusercontent.com/EconomicsObservatory/courses/main/datasets/advanced/map_world.geojson",
+                    "format": { "property": "features" }
+                },
+                "width": 600,
+                "height": 330,
+                "transform": [
+                    {
+                        "lookup": "properties.ISO3",
+                        "from": {
+                            "key": "partner_iso3",
+                            "fields": ["country", "value"],
+                            "data": {
+                                "url": data_url
+                            }
+                        }
+                    }
+                ],
+                "projection": {
+                    "type": "naturalEarth1",
+                    "scale": 125,
+                    "translate": [285, 180]
+                },
+                "layer": [
+                    {
+                        "mark": { "type": "geoshape", "stroke": "white", "strokeWidth": 0.3 },
+                        "encoding": { "color": { "value": "rgba(0,0,0,0.1)" } }
+
+                    },
+                    { "mark": { "type": "geoshape", "stroke": "white", "strokeWidth": 0.3 } }
+                ],
+                "encoding": {
+                    "color": {
+                        "condition": { "value": "lightgrey", "test": "!datum['value']" },
+                        "field": "value",
+                        "type": "quantitative",
+                        "legend": { "title": "", "format": "$,d" },
+                        "scale": { "type": "log", "scheme": "viridis", "reverse": false }
+                    },
+                    "tooltip": [
+                        { "field": "country", "title": "Country" },
+                        { "field": "value", "title": "", "format": "$,d" }
+                    ]
+                }
+            }
+
+            vegaEmbed("#trade_map_viz", spec, { config: eco_config });
+        }
+
+        build_trade_map()
+
+
+
+
+    </script>
 </body>
+
 </html>
