@@ -1,0 +1,26 @@
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "title": {
+    "text": "United Kingdom Imports of Tobacco, (not stemmed or strip...",
+    "subtitle": "Code 240110 - 2010 to 2022"
+  },
+  "data": {
+    "format": {"type": "json", "property": "data"},
+    "url": "https://hmt-hackathon-trade-api.azurewebsites.net/top_traders/?product_code=240110&start_year=2010&end_year=2022&trade_type=export&metric=value&num_countries=5&limit=1000"
+  },
+  "width": "container",
+  "mark": {"type": "bar", "point": true},
+  "encoding": {
+    "x": {"field": "year", "type": "ordinal"},
+    "y": {
+      "field": "total_value",
+      "axis": {"labelExpr": "'$' + datum.label + 'k'"},
+      "type": "quantitative"
+    },
+    "color": {
+      "field": "country_name",
+      "type": "nominal",
+      "legend": {"title": null}
+    }
+  }
+}
